@@ -1,0 +1,13 @@
+﻿# VS Code settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Dependencies (kalau nanti pakai npm)
+node_modules/
+
+# Python cache (kalau ada)
+venv/
+__pycache__/

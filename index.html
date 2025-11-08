@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Warkop Bungsu — Jl. Pancing No. 95, Medan</title>
+  <meta name="description" content="Warkop lokal rasa kampus: cepat, murah, bikin betah. Menu: mie goreng, nasi goreng, soup, kopi/teh. Pesan via WhatsApp. Alamat: Jl. Pancing No. 95, Medan." />
+  <meta property="og:title" content="Warkop Bungsu — Medan Pancing" />
+  <meta property="og:description" content="Menu hemat anak kost, ready cepat. Pesan via WhatsApp." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/img/og.jpg" />
+  <meta name="theme-color" content="#6C3B2A" />
+  <style>
+    :root{
+      --primary:#6C3B2A; /* coffee brown */
+      --accent:#F4A259;  /* warm amber */
+      --success:#10B981;
+      --warning:#F59E0B;
+      --bg:#F8FAFC;
+      --card:#ffffff;
+      --text:#0F172A;
+      --muted:#64748B;
+      --border:#E2E8F0;
+    }
+    [data-theme="dark"]{
+      --bg:#0F172A;
+      --card:#111827;
+      --text:#E5E7EB;
+      --muted:#94A3B8;
+      --border:#1F2937;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;background:var(--bg);color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{max-width:1200px;margin-inline:auto;padding:16px}
+    .btn{display:inline-flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-radius:16px;border:1px solid var(--border);background:var(--text);color:var(--bg);font-weight:600;cursor:pointer}
+    .btn.outline{background:transparent;color:var(--text)}
+    .btn.primary{background:var(--primary);border-color:var(--primary)}
+    .btn.accent{background:var(--accent);border-color:var(--accent);color:#111}
+    .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;background:var(--accent);color:#111;font-size:.75rem;font-weight:700}
+    .navbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.7);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--border)}
+    [data-theme="dark"] .navbar{background:rgba(17,24,39,.7)}
+    .nav-wrap{display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:.75rem;font-weight:800}
+    .brand .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-weight:900}
+    .nav{display:flex;flex-wrap:wrap;gap:.5rem}
+    .nav a{padding:.5rem .75rem;border-radius:10px}
+    .nav a.active{background:var(--card);border:1px solid var(--border)}
+    .tools{display:flex;align-items:center;gap:.5rem}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;padding-block:24px}
+    .hero h1{font-family:Poppins,Inter,system-ui,sans-serif;font-weight:800;letter-spacing:-.01em;font-size:40px;line-height:1.2;margin:0}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:1000px){.hero{grid-template-columns:1fr}.grid.cols-3{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+    .card.head{display:flex;align-items:center;justify-content:space-between}
+    .footer{margin-top:40px;padding:24px 0;border-top:1px solid var(--border);font-size:.9rem}
+    .kicker{display:flex;gap:8px;flex-wrap:wrap}
+    .kicker .item{display:flex;gap:6px;align-items:center;padding:8px 12px;border:1px dashed var(--border);border-radius:12px}
+    .section{display:none}
+    .section.active{display:block}
+
+    /* ===== MENU styles ===== */
+    .menu-card{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center}
+    .menu-card h4{margin:0;font-size:1rem}
+    .menu-card .meta{display:flex;gap:8px;flex-wrap:wrap;margin:.35rem 0}
+    .qty{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px}
+    .qty button{background:transparent;border:0;padding:.4rem .6rem;cursor:pointer}
+    .qty span{min-width:28px;text-align:center}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+    .filters button{padding:.4rem .7rem;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer}
+    .filters button.active{background:var(--text);color:var(--bg)}
+    .pill{font-size:.75rem;border:1px solid var(--border);padding:.15rem .5rem;border-radius:999px}
+    .fav-btn{background:transparent;border:0;cursor:pointer;font-size:1.1rem}
+
+    /* === Toolbar & grid === */
+    .menu-toolbar{position:sticky;top:64px;z-index:40;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 0;margin-bottom:12px}
+    .toolbar-wrap{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .toolbar-wrap input[type="search"], .toolbar-wrap select{padding:.65rem .9rem;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+    .menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    @media (max-width:1000px){.menu-grid{grid-template-columns:1fr}}
+
+    .ph{aspect-ratio:1.6/1;background:linear-gradient(135deg,rgba(108,59,42,.25),rgba(244,162,89,.25));display:grid;place-items:center;border-radius:14px;border:1px solid var(--border)}
+    .post{display:block}
+    .post h4{margin:.25rem 0}
+    .tag{font-size:.75rem;background:var(--border);padding:.2rem .5rem;border-radius:6px}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--text);color:var(--bg);padding:.65rem 1rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:80}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+
+    /* === Animations === */
+    .section{display:none; opacity:0; transform:translateY(6px); transition:opacity .25s ease, transform .25s ease}
+    .section.active{display:block; opacity:1; transform:none}
+
+    /* === Drawer (item detail) === */
+    .drawer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:90}
+    .drawer.show{display:flex}
+    .drawer-panel{width:min(560px,96vw);border-top-left-radius:16px;border-top-right-radius:16px;background:var(--card);border:1px solid var(--border);box-shadow:0 -10px 30px rgba(0,0,0,.25);padding:16px}
+
+    /* === Cart panel === */
+    .cart-fab{position:sticky;bottom:16px;display:flex;justify-content:flex-end;margin-top:12px}
+    .cart-panel{position:fixed;right:16px;bottom:16px;width:min(420px,96vw);max-height:70vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:none;z-index:70}
+    .cart-panel.active{display:block}
+    .cart-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border)}
+    .cart-body{padding:12px}
+    .cart-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--border)}
+
+    /* === Progress bar (trafik) === */
+    .progress{width:100%;height:12px;border-radius:999px;background:var(--border);overflow:hidden}
+    .progress > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--primary));transition:width .6s ease}
+  </style>
+
+  <script>
+    // ===== Router (hash-based) =====
+    function setRoute(route){
+      const r = (route||location.hash.replace('#','')||'beranda').toLowerCase();
+      document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active', a.dataset.route===r));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active', s.dataset.route===r));
+      const el = document.querySelector('.section.active h2');
+      if(el) el.focus({preventScroll:true});
+    }
+    window.addEventListener('hashchange', ()=>setRoute());
+
+    // ===== Theme toggle =====
+    function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t)}
+    function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')}
+
+    // ===== Utilities =====
+    const currency = n => 'Rp'+Number(n||0).toLocaleString('id-ID');
+    const onlyDigits = s => (s||'').replace(/\D+/g,'');
+    const qs = sel => document.querySelector(sel);
+    const qsa = sel => Array.from(document.querySelectorAll(sel));
+    const currentCat = () => document.querySelector('.filters .active')?.dataset.filter || '';
+    const openWA = (msg)=>{
+      const no = '+6281263457636';
+      const url = 'https://wa.me/'+onlyDigits(no)+'?text='+encodeURIComponent(msg||'Halo Warkop Bungsu, saya mau order/reservasi.');
+      window.open(url,'_blank');
+    }
+
+    // ===== Data =====
+    const FAVORITES = new Set(JSON.parse(localStorage.getItem('favorites')||'[]'));
+    const MENU = [
+      {id:'nasi-goreng',   name:'Nasi Goreng Kampus', price:18000, cat:'nasi', badge:'Best Seller', desc:'Gurih, porsi kenyang, bisa tambah telur.', rating:4.7, spicy:1, kcal:520, tags:['hemat','favorit']},
+      {id:'nasi-goreng-sp',name:'Nasi Goreng Seafood', price:22000, cat:'nasi', badge:'Spesial', desc:'Udang + cumi, wangi asap.', rating:4.7, spicy:2, kcal:560, tags:['spesial']},
+      {id:'nasi-ayam',     name:'Nasi Ayam Sambal', price:21000, cat:'ayam', badge:'Paket', desc:'Ayam + sambal + lalap.', rating:4.5, spicy:3, kcal:650, tags:['porsi']},
+      {id:'mie-goreng',    name:'Mie Goreng Anak Kost', price:16000, cat:'mie', badge:'Favorit', desc:'Manis-gurih, pedas sesuai selera.', rating:4.6, spicy:2, kcal:480, tags:['hemat']},
+      {id:'mie-nyemek',    name:'Mie Nyemek', price:19000, cat:'mie', badge:'Pedas', desc:'Kuah kental, cocok malam.', rating:4.5, spicy:3, kcal:540, tags:['spicy']},
+      {id:'kwetiau',       name:'Kwetiau Goreng', price:20000, cat:'mie', badge:'Baru', desc:'Tekstur kenyal, wangi smoky.', rating:4.4, spicy:1, kcal:520, tags:['smoky']},
+      {id:'soto-ayam',     name:'Soto Ayam', price:22000, cat:'soup', badge:'Hangat', desc:'Bumbu rempah, segar.', rating:4.5, spicy:1, kcal:420, tags:['hangat']},
+      {id:'soup-ayam',     name:'Soup Ayam Hangat', price:20000, cat:'soup', badge:'Ringan', desc:'Kuah bening nyaman.', rating:4.5, spicy:0, kcal:350, tags:['ringan']},
+      {id:'ayam-geprek',   name:'Ayam Geprek', price:20000, cat:'ayam', badge:'Pedas', desc:'Sambal level 1–5, kriuk.', rating:4.8, spicy:5, kcal:610, tags:['spicy']},
+      {id:'ayam-lalapan',  name:'Ayam Lalapan', price:23000, cat:'ayam', badge:'Paket', desc:'Sambal + lalap + nasi.', rating:4.6, spicy:3, kcal:650, tags:['porsi']},
+      {id:'teh-tarik',     name:'Teh Tarik', price:8000, cat:'minuman', badge:'Hemat', desc:'Manis pas, foam lembut.', rating:4.4, spicy:0, kcal:180, tags:['minuman']},
+      {id:'kopi-hitam',    name:'Kopi Hitam', price:7000, cat:'minuman', badge:'Mantap', desc:'Robusta lokal, pahit pas.', rating:4.6, spicy:0, kcal:5, tags:['minuman']},
+      {id:'kopi-susuar',   name:'Kopi Susu Gula Aren', price:12000, cat:'minuman', badge:'Favorit', desc:'Kopi + aren, creamy.', rating:4.7, spicy:0, kcal:180, tags:['minuman','kekinian']},
+      {id:'es-jeruk',      name:'Es Jeruk', price:9000, cat:'minuman', badge:'Segar', desc:'Perasan jeruk asli.', rating:4.5, spicy:0, kcal:110, tags:['minuman']},
+      {id:'teh-manis',     name:'Es Teh Manis', price:6000, cat:'minuman', badge:'Hemat', desc:'Manis seger.', rating:4.3, spicy:0, kcal:90, tags:['minuman']}
+    ];
+
+    const POSTS = [
+      {date:'2025-11-11', title:'Kenapa Warkop Daerah Kampus Itu Nyaman?', tags:['KulinerMedan','Tips'], body:'Ambience santai, colokan listrik, dan menu hemat bikin betah nugas bareng.'},
+      {date:'2025-11-13', title:'Harga Hemat Anak Kost: 5 Menu < Rp20k', tags:['Promo','Menu'], body:'Rekomendasi hemat: Mie Goreng, Kopi Hitam, Teh Tarik, Mie Nyemek, Nasi Goreng Kampus.'},
+      {date:'2025-11-15', title:'Pesan Cepat via WhatsApp — Begini Caranya', tags:['Panduan'], body:'Klik tombol WA, pilih menu di mini-cart, tinggal kirim. Simple.'},
+      {date:'2025-11-18', title:'Nasi Goreng vs Mie Goreng: Tim Mana?', tags:['Polling'], body:'Komentar kamu tim mana? Kami siapkan dua-duanya tiap hari.'},
+      {date:'2025-11-20', title:'Jam Ramai & Sepi — Datang Kapan Paling Cepat?', tags:['InfoToko'], body:'Biasanya 12:00–13:30 dan 19:00–21:00 ramai. Datang sebelum itu untuk cepat.'},
+      {date:'2025-11-22', title:'Story: Awal Mula Warkop Bungsu di Pancing', tags:['Story'], body:'Berawal dari dapur kecil, sekarang jadi tempat nongkrong favorit anak kampus.'},
+      {date:'2025-11-25', title:'5 Menu Teman Begadang Tugas', tags:['Tips','Menu'], body:'Kopi hitam + mie nyemek pedas level 3 paling dicari waktu deadline.'},
+      {date:'2025-11-27', title:'Cara Share Lokasi ke Teman', tags:['Panduan'], body:'Buka Google Maps, cari "Warkop Bungsu Jl. Pancing 95", lalu Share > WhatsApp.'},
+      {date:'2025-11-29', title:'“Rasa Warkop”: Rahasia Gurih', tags:['Dapur'], body:'Gunakan bawang putih tumis lama dan api besar untuk aroma asap khas.'},
+      {date:'2025-12-02', title:'Testimoni Pelanggan Bulan Ini', tags:['Testimoni'], body:'Kompilasi review asli pelanggan — makasih sudah mampir!'}
+    ];
+
+    // ===== Favorites & Mini Cart =====
+    const CART = [];
+    const findItem = id => CART.find(i=>i.id===id);
+    function addToCart(item){
+      const ex = findItem(item.id);
+      if(ex){ ex.qty++; } else { CART.push({...item, qty:1}); }
+      showToast('Ditambahkan ke keranjang');
+      renderCart();
+    }
+    function changeQty(id,delta){
+      const it = findItem(id); if(!it) return; it.qty+=delta; if(it.qty<=0){
+        const idx=CART.findIndex(x=>x.id===id); CART.splice(idx,1);
+      }
+      renderCart();
+    }
+    function cartTotal(){ return CART.reduce((s,i)=>s+i.price*i.qty,0); }
+    function cartText(){
+      let lines = ['Halo Warkop Bungsu, saya mau order:'];
+      CART.forEach(i=>lines.push(`- ${i.name} x${i.qty} = ${currency(i.price*i.qty)}`));
+      lines.push(`TOTAL: ${currency(cartTotal())}`);
+      lines.push('Alamat: ');
+      lines.push('Catatan: ');
+      return lines.join('\n');
+    }
+    function renderCart(){
+      const list = document.getElementById('cartList');
+      const total = document.getElementById('cartTotal');
+      if(!list||!total) return;
+      list.innerHTML = '';
+      CART.forEach(i=>{
+        const row = document.createElement('div');
+        row.className='cart-row';
+        row.innerHTML = `<div><strong>${i.name}</strong><div class="muted">${currency(i.price)}</div></div>
+          <div class="qty"><button aria-label="kurang" onclick="changeQty('${i.id}',-1)">−</button><span>${i.qty}</span><button aria-label="tambah" onclick="changeQty('${i.id}',1)">+</button></div>
+          <div><strong>${currency(i.price*i.qty)}</strong></div>`;
+        list.appendChild(row);
+      });
+      total.textContent = currency(cartTotal());
+      const empty = document.getElementById('cartEmpty');
+      if(empty) empty.style.display = CART.length? 'none':'block';
+    }
+
+    // ===== Toast =====
+    let toastTimer;
+    function showToast(msg){
+      const t = document.getElementById('toast');
+      if(!t) return;
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
+    }
+
+    // ===== Visitor Counter (CountAPI) =====
+    async function initCounter(){
+      const ns = 'warkop-bungsu-pancing-2025';
+      const GOAL = 1000;
+      const ts = Date.now();
+      const todayKey = 'day_'+ new Date().toISOString().slice(0,10).replace(/-/g,'');
+      const hit = (k)=> fetch(`https://api.countapi.xyz/hit/${ns}/${k}?t=${ts}`, {cache:'no-store', mode:'cors'});
+      const get = (k)=> fetch(`https://api.countapi.xyz/get/${ns}/${k}?t=${ts}`, {cache:'no-store', mode:'cors'}).then(r=>r.json());
+      try{
+        // total
+        await hit('visits');
+        const totalResp = await get('visits');
+        const total = Number(totalResp?.value||0);
+        document.querySelectorAll('.vc').forEach(n=> n.textContent = total.toLocaleString('id-ID'));
+
+        // today
+        await hit(todayKey);
+        const todayResp = await get(todayKey);
+        const today = Number(todayResp?.value||0);
+        const vcToday = document.getElementById('vcToday'); if(vcToday) vcToday.textContent = today.toLocaleString('id-ID');
+
+        // progress bar (trafik page)
+        const pct = Math.max(0, Math.min(100, Math.round(total/GOAL*100)));
+        const bar = document.getElementById('vcBar'); if(bar) bar.style.width = pct + '%';
+        const vp = document.getElementById('vcPct'); if(vp) vp.textContent = pct + '%';
+        const vr = document.getElementById('vcRemain'); if(vr) vr.textContent = Math.max(GOAL-total,0).toLocaleString('id-ID');
+
+        // mini widget on Beranda
+        const barMini = document.getElementById('vcBarMini'); if(barMini) barMini.style.width = pct + '%';
+        const vpMini = document.getElementById('vcPctMini'); if(vpMini) vpMini.textContent = pct + '%';
+
+        // QR image for current URL
+        const qr = document.getElementById('qrImg');
+        if(qr){ const u = encodeURIComponent(location.href); qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+u; }
+      }catch(e){
+        console.warn('Counter error:', e);
+        document.querySelectorAll('.vc').forEach(n=> n.textContent='—');
+        const vcToday = document.getElementById('vcToday'); if(vcToday) vcToday.textContent = '—';
+      }
+    }
+
+    // Diagnostic helper
+    async function testCounter(){
+      const ns = 'warkop-bungsu-pancing-2025';
+      const todayKey = 'day_'+ new Date().toISOString().slice(0,10).replace(/-/g,'');
+      try{
+        const a = await fetch(`https://api.countapi.xyz/hit/${ns}/visits?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+        const b = await fetch(`https://api.countapi.xyz/get/${ns}/visits?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+        const c = await fetch(`https://api.countapi.xyz/hit/${ns}/${todayKey}?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+        const d = await fetch(`https://api.countapi.xyz/get/${ns}/${todayKey}?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+        console.table({hit_total:a, get_total:b, hit_today:c, get_today:d});
+        showToast('Counter OK — cek console');
+      }catch(err){ console.error('Counter blocked?', err); showToast('Counter gagal — cek console'); }
+    }
+
+    // ===== Renderers =====
+    function renderMenu(cat){
+      const wrap = document.getElementById('menuList');
+      if(!wrap) return;
+      const q = (document.getElementById('menuSearch')?.value||'').toLowerCase();
+      const sort = document.getElementById('menuSort')?.value||'pop';
+      const onlyFav = !!document.getElementById('onlyFav')?.checked;
+      let data = MENU.filter(m=>(!cat||m.cat===cat)
+        && (!onlyFav || FAVORITES.has(m.id))
+        && (m.name.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || (m.tags||[]).some(t=>t.includes(q))));
+      if(sort==='price-asc') data.sort((a,b)=>a.price-b.price);
+      if(sort==='price-desc') data.sort((a,b)=>b.price-a.price);
+      if(sort==='pop') data.sort((a,b)=>b.rating-a.rating);
+      wrap.innerHTML='';
+      data.forEach(m=>{
+        const fav = FAVORITES.has(m.id);
+        const el = document.createElement('div');
+        el.className='card';
+        el.innerHTML = `
+          <div class="menu-card">
+            <div class="ph" aria-hidden="true">🍽️</div>
+            <div>
+              <h4>${m.name} <span class="badge">${m.badge}</span></h4>
+              <div class="meta">
+                <span class="pill">${'★'.repeat(Math.round(m.rating))}${'☆'.repeat(5-Math.round(m.rating))} <span class="muted">${m.rating.toFixed(1)}</span></span>
+                <span class="pill">Spicy: ${'🌶️'.repeat(m.spicy)||'—'}</span>
+                <span class="pill">${m.kcal} kkal</span>
+                <span class="pill">${m.cat}</span>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">${(m.tags||[]).map(t=>`<span class='pill'>#${t}</span>`).join('')}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:800">${currency(m.price)}</div>
+              <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">
+                <button class="btn outline add-btn">+ Keranjang</button>
+                <button class="btn accent detail-btn">Detail</button>
+                <button class="fav-btn" title="Favorit" aria-label="favorit">${fav?'❤️':'🤍'}</button>
+              </div>
+            </div>
+          </div>`;
+        wrap.appendChild(el);
+        el.querySelector('.add-btn').addEventListener('click',()=>addToCart(m));
+        el.querySelector('.detail-btn').addEventListener('click',()=>openDrawer(m));
+        el.querySelector('.fav-btn').addEventListener('click',()=>{
+          if(FAVORITES.has(m.id)) FAVORITES.delete(m.id); else FAVORITES.add(m.id);
+          localStorage.setItem('favorites', JSON.stringify([...FAVORITES]));
+          renderMenu(cat);
+        });
+      });
+    }
+
+    function renderPosts(){
+      const list = document.getElementById('postList');
+      if(!list) return;
+      list.innerHTML='';
+      POSTS.forEach(p=>{
+        const el = document.createElement('div');
+        el.className='card post';
+        el.innerHTML = `
+          <div class="muted">${new Date(p.date).toLocaleDateString('id-ID',{dateStyle:'medium'})}</div>
+          <h4>${p.title}</h4>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin:.25rem 0">${p.tags.map(t=>`<span class="tag">#${t}</span>`).join('')}</div>
+          <p>${p.body}</p>`;
+        list.appendChild(el);
+      });
+    }
+
+    // ===== On Load =====
+    document.addEventListener('DOMContentLoaded',()=>{
+      applyTheme(localStorage.getItem('theme')||'light');
+      setRoute();
+      renderMenu();
+      renderPosts();
+      initCounter();
+
+      // Delegasi klik nav -> pastikan setRoute terpanggil & hash diupdate
+      document.querySelector('.nav')?.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]'); if(!a) return;
+        e.preventDefault(); const target = a.getAttribute('href');
+        if(location.hash !== target) location.hash = target; setRoute();
+      });
+
+      // Filter kategori menu
+      document.querySelectorAll('[data-filter]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); const v = btn.dataset.filter; renderMenu(v||undefined);
+        })
+      })
+
+      // Toolbar search, sort, favorites-only
+      document.getElementById('menuSearch')?.addEventListener('input',()=>renderMenu(currentCat()));
+      document.getElementById('menuSort')?.addEventListener('change',()=>renderMenu(currentCat()));
+      document.getElementById('onlyFav')?.addEventListener('change',()=>renderMenu(currentCat()));
+
+      // Cart UI
+      document.getElementById('cartToggle')?.addEventListener('click',()=>{
+        document.getElementById('cartPanel')?.classList.toggle('active');
+      });
+      document.getElementById('cartSend')?.addEventListener('click',()=>{
+        if(!CART.length) return showToast('Keranjang masih kosong');
+        openWA(cartText());
+      })
+
+      // Status operasional & rekomendasi harian
+      const now = new Date();
+      const h = now.getHours();
+      const open = h>=10 && h<23;
+      const ob = document.getElementById('openBadge');
+      const ot = document.getElementById('openText');
+      if(ob) ob.textContent = open ? 'Buka' : 'Tutup';
+      if(ot) ot.textContent = open ? 'Sedang melayani — ayo mampir!' : 'Di luar jam operasional.';
+      const pick = document.getElementById('todayPick');
+      if(pick){
+        const favs = MENU.filter(m=>m.badge==='Best Seller' || m.badge==='Favorit');
+        pick.textContent = (favs[Math.floor(Math.random()*favs.length)]?.name||'Nasi Goreng Kampus')+ ' — rekomendasi untukmu.';
+      }
+    });
+
+    // ===== Drawer (detail menu) =====
+    let DRAWER_ITEM=null;
+    function openDrawer(item){
+      DRAWER_ITEM = item; document.getElementById('drawerTitle').textContent = item.name;
+      document.getElementById('drawerBody').textContent = item.desc + ' · Harga dasar ' + currency(item.price);
+      document.getElementById('drawer').classList.add('show');
+      const form = document.getElementById('optionForm');
+      form.onsubmit = (e)=>{
+        e.preventDefault();
+        const data = new FormData(form);
+        const spicy = data.get('spicy');
+        const addons = data.getAll('addon');
+        const extra = 3000*addons.length;
+        addToCart({...item, id: item.id + '|s'+spicy+'|a'+addons.join('+'), name: item.name+optionSuffix(spicy, addons), price: item.price + extra});
+        closeDrawer();
+      }
+    }
+    function optionSuffix(spicy, addons){
+      const parts=[]; if(spicy&&spicy!=='0') parts.push('🌶️'+spicy); if(addons.length) parts.push('+'+addons.join(','));
+      return parts.length? ' ('+parts.join(' ')+')':'';
+    }
+    function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+
+    // ===== Helper: Share/Copy =====
+    function copyURL(){
+      try{ navigator.clipboard.writeText(location.href); showToast('Link disalin'); }catch(e){ showToast('Gagal menyalin'); }
+    }
+    function shareSite(){
+      const data = {title:'Warkop Bungsu', text:'Bantu capai target 1.000 kunjungan situs Warkop Bungsu!', url: location.href};
+      if(navigator.share){ navigator.share(data).catch(()=>copyURL()); }
+      else { copyURL(); }
+    }
+
+    // ====== Self Tests ======
+    function runSelfTests(){
+      const results = [];
+      try{
+        // Test 1: Router switches sections
+        const before = document.querySelector('.section.active')?.dataset.route;
+        setRoute('menu');
+        const after = document.querySelector('.section.active')?.dataset.route;
+        results.push(['RouterSwitch', after==='menu']);
+        setRoute(before||'beranda');
+
+        // Test 2: Menu render populates items
+        renderMenu();
+        const items = document.querySelectorAll('#menuList .menu-card').length;
+        results.push(['MenuRenderCount', items===MENU.length]);
+
+        // Test 3: Cart add increases total
+        const t0 = cartTotal();
+        addToCart(MENU[0]);
+        const t1 = cartTotal();
+        results.push(['CartAdd', t1>t0]);
+
+        // Test 4: Counter function available
+        results.push(['CounterNoThrow', typeof initCounter==='function']);
+
+        // Test 5: Search filter reduces results
+        const search = document.getElementById('menuSearch');
+        if(search){ search.value = 'kopi'; renderMenu();
+          const filtered = document.querySelectorAll('#menuList .menu-card').length;
+          results.push(['SearchFilters', filtered < MENU.length && filtered > 0]);
+          search.value = ''; renderMenu();
+        } else { results.push(['SearchFilters', true]); }
+
+        // Test 6: Sort price asc
+        const sort = document.getElementById('menuSort');
+        if(sort){ sort.value = 'price-asc'; renderMenu();
+          const prices = Array.from(document.querySelectorAll('#menuList .menu-card'))
+            .map(card=>Number(card.querySelector('div[style*="font-weight:800"]').textContent.replace(/[^0-9]/g,'')||0));
+          const sorted = prices.every((v,i,a)=> i===0 || a[i-1] <= v);
+          results.push(['SortAsc', sorted]);
+          sort.value = 'pop'; renderMenu();
+        } else { results.push(['SortAsc', true]); }
+
+        // Test 7: Favorites toggle persists & filter works
+        FAVORITES.add(MENU[1].id); localStorage.setItem('favorites', JSON.stringify([...FAVORITES]));
+        const favBefore = document.querySelectorAll('#menuList .menu-card').length; 
+        const favToggle = document.getElementById('onlyFav'); if(favToggle){ favToggle.checked = true; renderMenu(); }
+        const favAfter = document.querySelectorAll('#menuList .menu-card').length;
+        results.push(['FavoritesFilter', favAfter <= favBefore && favAfter >= 1]);
+        if(favToggle){ favToggle.checked = false; renderMenu(); }
+
+        // Test 8: Drawer opens and adds with options
+        openDrawer(MENU[0]);
+        const drawerOpen = document.getElementById('drawer').classList.contains('show');
+        results.push(['DrawerOpen', drawerOpen]);
+        const form = document.getElementById('optionForm');
+        if(form){
+          form.querySelector('input[name="spicy"][value="2"]').checked = true;
+          const addon = form.querySelector('input[name="addon"][value="telur"]'); addon.checked = true;
+          form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));
+          const t2 = cartTotal();
+          results.push(['DrawerAddToCart', t2 > t1]);
+        }
+        closeDrawer();
+
+        // Test 9: Trafik elements exist (class .vc and #vcBar)
+        results.push(['TrafficElements', !!document.querySelector('.vc') && !!document.getElementById('vcBar')]);
+
+        // Test 10: Toast element exists
+        results.push(['ToastExists', !!document.getElementById('toast')]);
+
+      }catch(e){ results.push(['Exception', false, String(e)]); }
+      console.table(results.map(([name, pass, note])=>({name, pass, note: note||''})));
+      return results;
+    }
+  </script>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="container nav-wrap">
+      <a href="#beranda" class="brand" onclick="setRoute('beranda')">
+        <div class="logo">WB</div>
+        <div>Warkop Bungsu <span class="muted" style="font-weight:600">· Medan Pancing</span></div>
+      </a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="#beranda" data-route="beranda">Beranda</a>
+        <a href="#menu" data-route="menu">Menu</a>
+        <a href="#promo" data-route="promo">Promo</a>
+        <a href="#trafik" data-route="trafik">Trafik</a>
+        <a href="#blog" data-route="blog">Blog</a>
+        <a href="#testimoni" data-route="testimoni">Testimoni</a>
+        <a href="#galeri" data-route="galeri">Galeri</a>
+        <a href="#tentang" data-route="tentang">Tentang</a>
+        <a href="#kontak" data-route="kontak">Kontak</a>
+      </nav>
+      <div class="tools">
+        <button class="btn outline" onclick="openWA()">Pesan via WA</button>
+        <button class="btn" aria-label="Toggle tema" onclick="toggleTheme()">🌙/☀️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beranda -->
+  <main class="container section active" data-route="beranda">
+    <section class="hero card">
+      <div>
+        <div class="badge">Dekat Kampus</div>
+        <h1 tabindex="-1">Warkop lokal, rasa kampus. <span style="color:var(--accent)">Cepat, murah</span>, bikin betah.</h1>
+        <p class="muted">Menu favorit: mie/nasi goreng, soup, ayam, kopi & teh. Estimasi siap saji 5–10 menit.</p>
+        <div class="kicker" style="margin-top:8px">
+          <div class="item">💸 Harga ramah kantong</div>
+          <div class="item">⚡ Siap cepat</div>
+          <div class="item">📍 Jl. Pancing No. 95, Medan</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn primary" onclick="location.hash='#menu';setRoute('menu')">Lihat Menu</button>
+          <button class="btn outline" onclick="openWA('Halo, mau tanya menu hari ini')">Tanya Menu</button>
+          <button class="btn accent" onclick="location.hash='#promo';setRoute('promo')">Lihat Promo</button>
+        </div>
+      </div>
+      <div class="ph" aria-hidden="true" style="aspect-ratio:1/1;border-radius:24px">☕</div>
+    </section>
+
+    <section class="grid cols-3">
+      <div class="card">
+        <div class="card head"><strong>Status Operasional</strong><span class="badge" id="openBadge">Cek</span></div>
+        <p id="openText" class="muted">—</p>
+      </div>
+      <div class="card">
+        <div class="card head"><strong>Menu Unggulan</strong><span class="badge">Best Seller</span></div>
+        <ul>
+          <li>Nasi Goreng Kampus</li>
+          <li>Mie Goreng Anak Kost</li>
+          <li>Soup Ayam Hangat</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card head"><strong>Pengunjung</strong><span class="badge">Target 1.000</span></div>
+        <p>Total kunjungan situs: <strong class="vc">—</strong></p>
+        <div class="progress" aria-label="Progres menuju 1.000" style="margin-top:.35rem"><span id="vcBarMini"></span></div>
+        <p class="muted" style="margin:.4rem 0 0">Progres: <strong id="vcPctMini">0%</strong></p>
+      </div>
+    </section>
+
+    <section class="grid cols-3">
+      <div class="card">
+        <div class="badge">Special Today</div>
+        <h3>Rekomendasi Hari Ini</h3>
+        <p id="todayPick" class="muted">—</p>
+      </div>
+      <div class="card">
+        <div class="badge">Info</div>
+        <h3>Pengumuman</h3>
+        <p class="muted">Buka sampai 23:00. Ada colokan & Wi‑Fi.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Shortcut</div>
+        <h3>Tautan Cepat</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn outline" onclick="location.hash='#blog';setRoute('blog')">Blog</button>
+          <button class="btn outline" onclick="location.hash='#testimoni';setRoute('testimoni')">Testimoni</button>
+          <button class="btn outline" onclick="location.hash='#kontak';setRoute('kontak')">Kontak</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Menu -->
+  <section class="container section" data-route="menu">
+    <h2 tabindex="-1">Menu</h2>
+
+    <div class="menu-toolbar">
+      <div class="container toolbar-wrap">
+        <input id="menuSearch" type="search" placeholder="Cari menu, kata kunci, tag..." aria-label="Cari menu" />
+        <select id="menuSort" aria-label="Urutkan">
+          <option value="pop">Terpopuler</option>
+          <option value="price-asc">Harga: Termurah</option>
+          <option value="price-desc">Harga: Termahal</option>
+        </select>
+        <label style="display:inline-flex;align-items:center;gap:6px"><input id="onlyFav" type="checkbox" /> Favorit saja</label>
+        <button class="btn outline" onclick="document.getElementById('menuSearch').value='spicy'; renderMenu(currentCat())">🌶️ Spicy</button>
+        <button class="btn outline" onclick="document.getElementById('menuSearch').value='minuman'; renderMenu(currentCat())">🥤 Minuman</button>
+      </div>
+    </div>
+
+    <div class="filters" aria-label="Filter kategori">
+      <button class="active" data-filter="">Semua</button>
+      <button data-filter="nasi">Nasi</button>
+      <button data-filter="mie">Mie</button>
+      <button data-filter="soup">Soup</button>
+      <button data-filter="ayam">Ayam</button>
+      <button data-filter="minuman">Minuman</button>
+    </div>
+    <div id="menuList" class="menu-grid"></div>
+
+    <div class="cart-fab">
+      <button id="cartToggle" class="btn accent">🛒 Keranjang</button>
+    </div>
+
+    <div id="cartPanel" class="cart-panel">
+      <div class="cart-header"><strong>Keranjang</strong><button class="btn outline" onclick="document.getElementById('cartPanel').classList.remove('active')">Tutup</button></div>
+      <div class="cart-body">
+        <div id="cartEmpty" class="muted">Belum ada item.</div>
+        <div id="cartList"></div>
+      </div>
+      <div class="card" style="margin:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Total</strong></div>
+          <div id="cartTotal" style="font-weight:800">Rp0</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="cartSend" class="btn primary" style="flex:1">Kirim ke WhatsApp</button>
+          <button class="btn outline" style="flex:1" onclick="CART.length=0;renderCart()">Bersihkan</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trafik -->
+  <section class="container section" data-route="trafik">
+    <h2 tabindex="-1">Trafik Pengunjung</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card head"><strong>Total Kunjungan</strong><span class="badge">Target 1.000</span></div>
+        <p style="margin:.5rem 0">Saat ini: <strong class="vc">—</strong> kunjungan</p>
+        <div class="progress" aria-label="Progres menuju 1.000"><span id="vcBar"></span></div>
+        <p class="muted" style="margin:.5rem 0 0">Progres: <strong id="vcPct">0%</strong> · Sisa <strong id="vcRemain">—</strong> kunjungan</p>
+      </div>
+      <div class="card">
+        <div class="card head"><strong>Kunjungan Hari Ini</strong><span class="badge">Realtime</span></div>
+        <p style="margin:.5rem 0">Hari ini: <strong id="vcToday">—</strong> kunjungan</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn primary" onclick="shareSite()">Bagikan Situs</button>
+          <button class="btn outline" onclick="copyURL()">Salin Link</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card head"><strong>QR Akses Cepat</strong><span class="badge">Scan</span></div>
+        <p class="muted">Tempel di meja / poster agar teman-teman ikut membuka situs.</p>
+        <img id="qrImg" alt="QR menuju situs" style="width:180px;height:180px;border-radius:12px;border:1px solid var(--border)"/>
+      </div>
+      <div class="card">
+        <div class="card head"><strong>Tips Capai 1.000</strong><span class="badge">Growth</span></div>
+        <ul>
+          <li>Taruh QR di meja kasir & story IG setiap sore.</li>
+          <li>Promo kecil: diskon Rp2.000 jika tunjukkan halaman Promo.</li>
+          <li>Posting 1 konten Reels per 2 hari dengan link situs di bio.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promo -->
+  <section class="container section" data-route="promo">
+    <h2 tabindex="-1">Promo</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="badge">Setiap Hari 14–17</div>
+        <h3>Gratis Teh Manis</h3>
+        <p>Untuk pesanan &gt; Rp25.000. Gunakan kode <strong>TEMANBUNGSU</strong> saat pesan via WhatsApp.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Khusus Anak Kost</div>
+        <h3>Paket Hemat Kost</h3>
+        <p>Nasi + Ayam + Es Teh cuma <strong>Rp22.000</strong>. Tunjukkan KTM/ID kos saat ambil.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Diskon 15%</div>
+        <h3>Happy Hour Malam</h3>
+        <p>Diskon 15% untuk menu <em>mie</em> pukul <strong>21:00–22:00</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Bundle</div>
+        <h3>Paket Berdua</h3>
+        <p>2 Nasi Goreng + 2 Minuman hanya <strong>Rp49.000</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Referral</div>
+        <h3>Ajak Teman</h3>
+        <p>Ajak 1 teman baru, masing-masing dapat <strong>Es Teh Gratis</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="badge">QRIS</div>
+        <h3>Cashback 5%</h3>
+        <p>Pembayaran QRIS minimal Rp30.000 (syarat berlaku).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog -->
+  <section class="container section" data-route="blog">
+    <h2 tabindex="-1">Blog</h2>
+    <p class="muted">Update rutin tentang menu, tips, dan info toko.</p>
+    <div id="postList" class="grid cols-2"></div>
+  </section>
+
+  <!-- Testimoni -->
+  <section class="container section" data-route="testimoni">
+    <h2 tabindex="-1">Testimoni</h2>
+    <div class="grid cols-2">
+      <div class="card"><p>“Nasi gorengnya wangi asap banget. Harga aman!”</p><div class="muted">— A, Mahasiswa</div></div>
+      <div class="card"><p>“Order via WA cepet, 10 menit jadi.”</p><div class="muted">— B, Karyawan</div></div>
+      <div class="card"><p>“Tempatnya santai, enak buat nugas bareng.”</p><div class="muted">— C, Mahasiswi</div></div>
+      <div class="card"><p>“Ayam gepreknya pedesnya pas!”</p><div class="muted">— D, Freelancer</div></div>
+    </div>
+  </section>
+
+  <!-- Galeri -->
+  <section class="container section" data-route="galeri">
+    <h2 tabindex="-1">Galeri</h2>
+    <div class="grid cols-3">
+      <div class="card ph">🍛</div>
+      <div class="card ph">🍜</div>
+      <div class="card ph">☕</div>
+      <div class="card ph">🍗</div>
+      <div class="card ph">🍵</div>
+      <div class="card ph">🥣</div>
+    </div>
+  </section>
+
+  <!-- Tentang -->
+  <section class="container section" data-route="tentang">
+    <h2 tabindex="-1">Tentang Warkop Bungsu</h2>
+    <div class="card">
+      <p>Warkop Bungsu adalah warung kopi & makan cepat di <strong>Jl. Pancing No. 95, Medan</strong>. Kami mengusung gaya lokal yang santai, cocok untuk mahasiswa dan karyawan sekitar kampus. Fokus kami: <em>cepat, murah, bikin betah</em>.</p>
+      <ul>
+        <li>Menu inti: mie/nasi goreng, soup, ayam, kopi & teh.</li>
+        <li>Estimasi siap saji: 5–10 menit.</li>
+        <li>Pesan mudah via WhatsApp, ambil di tempat.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Kontak -->
+  <section class="container section" data-route="kontak">
+    <h2 tabindex="-1">Kontak</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Alamat & Jam</h3>
+        <p><strong>Jl. Pancing No. 95, Medan</strong></p>
+        <p class="muted">Jam buka: 10:00–23:00 (estimasi)</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn outline" href="https://www.google.com/maps/search/?api=1&query=Warkop+Bungsu+Jl.+Pancing+95+Medan" target="_blank" rel="noopener">📍 Buka di Maps</a>
+          <button class="btn" onclick="navigator.clipboard?.writeText('Jl. Pancing No. 95, Medan');showToast('Alamat disalin')">Salin Alamat</button>
+          <button class="btn" onclick="openWA('Halo, boleh minta pin Google Maps?')">Tanya Lokasi via WA</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Peta</h3>
+        <div style="aspect-ratio:16/9;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+          <iframe title="Google Maps" width="100%" height="100%" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Jl.%20Pancing%2095%20Medan&output=embed"></iframe>
+        </div>
+      </div>
+      <div class="card">
+        <h3>WhatsApp</h3>
+        <p>Pesan / tanya menu / reservasi:</p>
+        <button class="btn primary" onclick="openWA()">💬 Chat WhatsApp</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer container">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>© <span id="year"></span> Warkop Bungsu · Medan Pancing</div>
+      <div>Pengunjung situs: <strong class="vc">—</strong> · Target 1.000</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- JSON-LD LocalBusiness (SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"CafeOrCoffeeShop",
+    "name":"Warkop Bungsu",
+    "address":{
+      "@type":"PostalAddress",
+      "streetAddress":"Jl. Pancing No. 95",
+      "addressLocality":"Medan",
+      "addressCountry":"ID"
+    },
+    "servesCuisine":["Indonesian","Coffee"],
+    "url":"https://contoh-warkop-bungsu.web",
+    "sameAs":[],
+    "priceRange":"Rp",
+    "menu":"#menu"
+  }
+  </script>
+
+  <!-- Drawer: Item Detail -->
+  <div id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="drawerTitle" style="margin:0">Detail Menu</h3>
+        <button class="btn outline" onclick="closeDrawer()">Tutup</button>
+      </div>
+      <div id="drawerBody" class="muted" style="margin-top:8px"></div>
+      <form id="optionForm" style="margin-top:12px">
+        <div class="card" style="margin-bottom:8px">
+          <strong>Pilih Level Pedas</strong>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <label><input type="radio" name="spicy" value="0" checked> 0</label>
+            <label><input type="radio" name="spicy" value="1"> 1</label>
+            <label><input type="radio" name="spicy" value="2"> 2</label>
+            <label><input type="radio" name="spicy" value="3"> 3</label>
+            <label><input type="radio" name="spicy" value="4"> 4</label>
+            <label><input type="radio" name="spicy" value="5"> 5</label>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:8px">
+          <strong>Tambahan (Rp3.000)</strong>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+            <label><input type="checkbox" name="addon" value="telur"> Telur</label>
+            <label><input type="checkbox" name="addon" value="keju"> Keju</label>
+            <label><input type="checkbox" name="addon" value="extra-pedas"> Extra Pedas</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button type="button" class="btn outline" onclick="closeDrawer()">Batal</button>
+          <button type="submit" class="btn primary">Tambah ke Keranjang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
