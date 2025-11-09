@@ -11,3 +11,6 @@ node_modules/
 # Python cache (kalau ada)
 venv/
 __pycache__/
+
+# backups
+*.backup.html
