@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="id" data-theme="light">
 <head>
+  <!-- Privacy-friendly analytics by Plausible -->
+<script async defer data-domain="warkop-bungsu-site.vercel.app" src="https://plausible.io/js/script.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Warkop Bungsu — Jl. Pancing No. 95, Medan</title>
@@ -10,6 +16,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/img/og.jpg" />
   <meta name="theme-color" content="#6C3B2A" />
+
   <style>
     :root{
       --primary:#6C3B2A; /* coffee brown */
@@ -113,6 +120,7 @@
     .progress > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--primary));transition:width .6s ease}
   </style>
 
+  <!-- ===== Core scripts (router, theme, data, counter, dll) ===== -->
   <script>
     // ===== Router (hash-based) =====
     function setRoute(route){
@@ -131,14 +139,12 @@
     // ===== Utilities =====
     const currency = n => 'Rp'+Number(n||0).toLocaleString('id-ID');
     const onlyDigits = s => (s||'').replace(/\D+/g,'');
-    const qs = sel => document.querySelector(sel);
-    const qsa = sel => Array.from(document.querySelectorAll(sel));
     const currentCat = () => document.querySelector('.filters .active')?.dataset.filter || '';
     const openWA = (msg)=>{
       const no = '+6281263457636';
       const url = 'https://wa.me/'+onlyDigits(no)+'?text='+encodeURIComponent(msg||'Halo Warkop Bungsu, saya mau order/reservasi.');
       window.open(url,'_blank');
-    }
+    };
 
     // ===== Data =====
     const FAVORITES = new Set(JSON.parse(localStorage.getItem('favorites')||'[]'));
@@ -224,59 +230,107 @@
       clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
     }
 
-    // ===== Visitor Counter (CountAPI) =====
-    async function initCounter(){
-      const ns = 'warkop-bungsu-pancing-2025';
-      const GOAL = 1000;
-      const ts = Date.now();
-      const todayKey = 'day_'+ new Date().toISOString().slice(0,10).replace(/-/g,'');
-      const hit = (k)=> fetch(`https://api.countapi.xyz/hit/${ns}/${k}?t=${ts}`, {cache:'no-store', mode:'cors'});
-      const get = (k)=> fetch(`https://api.countapi.xyz/get/${ns}/${k}?t=${ts}`, {cache:'no-store', mode:'cors'}).then(r=>r.json());
+    // ====== Visitor Counter & Plausible realtime ======
+    function fetchWithTimeout(url, ms=5000){
+      return Promise.race([
+        fetch(url, { cache:'no-store', mode:'cors' }),
+        new Promise((_,rej)=> setTimeout(()=>rej(new Error('timeout')), ms))
+      ]);
+    }
+const PLAUSIBLE_SITE = 'warkop-bungsu-site.vercel.app';
+    async function updatePlausibleActive(){
       try{
-        // total
-        await hit('visits');
-        const totalResp = await get('visits');
-        const total = Number(totalResp?.value||0);
-        document.querySelectorAll('.vc').forEach(n=> n.textContent = total.toLocaleString('id-ID'));
-
-        // today
-        await hit(todayKey);
-        const todayResp = await get(todayKey);
-        const today = Number(todayResp?.value||0);
-        const vcToday = document.getElementById('vcToday'); if(vcToday) vcToday.textContent = today.toLocaleString('id-ID');
-
-        // progress bar (trafik page)
-        const pct = Math.max(0, Math.min(100, Math.round(total/GOAL*100)));
-        const bar = document.getElementById('vcBar'); if(bar) bar.style.width = pct + '%';
-        const vp = document.getElementById('vcPct'); if(vp) vp.textContent = pct + '%';
-        const vr = document.getElementById('vcRemain'); if(vr) vr.textContent = Math.max(GOAL-total,0).toLocaleString('id-ID');
-
-        // mini widget on Beranda
-        const barMini = document.getElementById('vcBarMini'); if(barMini) barMini.style.width = pct + '%';
-        const vpMini = document.getElementById('vcPctMini'); if(vpMini) vpMini.textContent = pct + '%';
-
-        // QR image for current URL
-        const qr = document.getElementById('qrImg');
-        if(qr){ const u = encodeURIComponent(location.href); qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+u; }
-      }catch(e){
-        console.warn('Counter error:', e);
-        document.querySelectorAll('.vc').forEach(n=> n.textContent='—');
-        const vcToday = document.getElementById('vcToday'); if(vcToday) vcToday.textContent = '—';
-      }
+        const r = await fetch(
+          `https://plausible.io/api/v1/stats/realtime/active-visitors?site_id=${encodeURIComponent(PLAUSIBLE_SITE)}`,
+          { cache:'no-store' }
+        );
+        const d = await r.json();
+        const n = Number(d?.results?.active_visitors || 0);
+        const el = document.getElementById('plActive');
+        if(el) el.textContent = n.toLocaleString('id-ID');
+      }catch(e){ console.warn('[Plausible realtime]', e); }
     }
 
-    // Diagnostic helper
-    async function testCounter(){
-      const ns = 'warkop-bungsu-pancing-2025';
-      const todayKey = 'day_'+ new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const VC_LAST_HIT_KEY = 'vc_last_hit_time';
+    const VC_COOLDOWN_MINUTES = 5;
+    function updateTrafficUI(total){
+      const goal = 1000;
+      const t = Math.max(0, Number(total||0));
+      const pct = Math.min(100, Math.round(t/goal*100));
+      const remain = Math.max(0, goal - t);
+
+      document.querySelectorAll('.vc').forEach(n=> n.textContent = t.toLocaleString('id-ID'));
+      const bar = document.getElementById('vcBar');
+      const pctEl = document.getElementById('vcPct');
+      const remEl = document.getElementById('vcRemain');
+      if(bar) bar.style.width = pct + '%';
+      if(pctEl) pctEl.textContent = pct + '%';
+      if(remEl) remEl.textContent = remain.toLocaleString('id-ID');
+
+      const barMini = document.getElementById('vcBarMini');
+      const pctMini = document.getElementById('vcPctMini');
+      if(barMini) barMini.style.width = pct + '%';
+      if(pctMini) pctMini.textContent = pct + '%';
+    }
+    function updateTodayUI(total){
+      const today = (new Date()).toISOString().slice(0,10);
+      const dKey = 'vc_date';
+      const bKey = 'vc_baseline';
+      if(localStorage.getItem(dKey) !== today){
+        localStorage.setItem(dKey, today);
+        localStorage.setItem(bKey, String(total||0));
+      }
+      const baseline = Number(localStorage.getItem(bKey) || total || 0);
+      const todayCount = Math.max(0, Number(total||0) - baseline);
+      const el = document.getElementById('vcToday');
+      if(el) el.textContent = todayCount.toLocaleString('id-ID');
+    }
+    async function initCounter(){
+      const ns = `warkop-bungsu-${location.hostname}`;
+      const now = Date.now();
+      const lastHit = Number(localStorage.getItem(VC_LAST_HIT_KEY) || 0);
+      const cooldownMs = VC_COOLDOWN_MINUTES * 60 * 1000;
+      const shouldHit = (now - lastHit) > cooldownMs;
+
+      const hitUrl = `https://api.countapi.xyz/hit/${encodeURIComponent(ns)}/visits`;
+      const getUrl = `https://api.countapi.xyz/get/${encodeURIComponent(ns)}/visits`;
+
+      let total = 0;
+      let success = false;
+
       try{
-        const a = await fetch(`https://api.countapi.xyz/hit/${ns}/visits?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
-        const b = await fetch(`https://api.countapi.xyz/get/${ns}/visits?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
-        const c = await fetch(`https://api.countapi.xyz/hit/${ns}/${todayKey}?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
-        const d = await fetch(`https://api.countapi.xyz/get/${ns}/${todayKey}?t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
-        console.table({hit_total:a, get_total:b, hit_today:c, get_today:d});
-        showToast('Counter OK — cek console');
-      }catch(err){ console.error('Counter blocked?', err); showToast('Counter gagal — cek console'); }
+        if(shouldHit){
+          const res = await fetchWithTimeout(hitUrl);
+          if(res?.ok){
+            const data = await res.json();
+            total = Number(data?.value || 0);
+            localStorage.setItem(VC_LAST_HIT_KEY, String(now));
+            success = true;
+          }
+        }
+        if(!success){
+          const res = await fetchWithTimeout(getUrl);
+          if(res?.ok){
+            const data = await res.json();
+            total = Number(data?.value || 0);
+          } else {
+            total = Number(localStorage.getItem('vc_fallback') || 100);
+          }
+        }
+        if(total > 0) localStorage.setItem('vc_fallback', String(total));
+      }catch(e){
+        console.warn('[Counter]', e);
+        total = Number(localStorage.getItem('vc_fallback') || 100);
+      }
+
+      updateTrafficUI(total);
+      updateTodayUI(total);
+
+      const qrImg = document.getElementById('qrImg');
+      if(qrImg){
+        const url = encodeURIComponent(location.href);
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${url}`;
+      }
     }
 
     // ===== Renderers =====
@@ -329,7 +383,6 @@
         });
       });
     }
-
     function renderPosts(){
       const list = document.getElementById('postList');
       if(!list) return;
@@ -346,58 +399,6 @@
       });
     }
 
-    // ===== On Load =====
-    document.addEventListener('DOMContentLoaded',()=>{
-      applyTheme(localStorage.getItem('theme')||'light');
-      setRoute();
-      renderMenu();
-      renderPosts();
-      initCounter();
-
-      // Delegasi klik nav -> pastikan setRoute terpanggil & hash diupdate
-      document.querySelector('.nav')?.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href^="#"]'); if(!a) return;
-        e.preventDefault(); const target = a.getAttribute('href');
-        if(location.hash !== target) location.hash = target; setRoute();
-      });
-
-      // Filter kategori menu
-      document.querySelectorAll('[data-filter]').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
-          btn.classList.add('active'); const v = btn.dataset.filter; renderMenu(v||undefined);
-        })
-      })
-
-      // Toolbar search, sort, favorites-only
-      document.getElementById('menuSearch')?.addEventListener('input',()=>renderMenu(currentCat()));
-      document.getElementById('menuSort')?.addEventListener('change',()=>renderMenu(currentCat()));
-      document.getElementById('onlyFav')?.addEventListener('change',()=>renderMenu(currentCat()));
-
-      // Cart UI
-      document.getElementById('cartToggle')?.addEventListener('click',()=>{
-        document.getElementById('cartPanel')?.classList.toggle('active');
-      });
-      document.getElementById('cartSend')?.addEventListener('click',()=>{
-        if(!CART.length) return showToast('Keranjang masih kosong');
-        openWA(cartText());
-      })
-
-      // Status operasional & rekomendasi harian
-      const now = new Date();
-      const h = now.getHours();
-      const open = h>=10 && h<23;
-      const ob = document.getElementById('openBadge');
-      const ot = document.getElementById('openText');
-      if(ob) ob.textContent = open ? 'Buka' : 'Tutup';
-      if(ot) ot.textContent = open ? 'Sedang melayani — ayo mampir!' : 'Di luar jam operasional.';
-      const pick = document.getElementById('todayPick');
-      if(pick){
-        const favs = MENU.filter(m=>m.badge==='Best Seller' || m.badge==='Favorit');
-        pick.textContent = (favs[Math.floor(Math.random()*favs.length)]?.name||'Nasi Goreng Kampus')+ ' — rekomendasi untukmu.';
-      }
-    });
-
     // ===== Drawer (detail menu) =====
     let DRAWER_ITEM=null;
     function openDrawer(item){
@@ -405,6 +406,7 @@
       document.getElementById('drawerBody').textContent = item.desc + ' · Harga dasar ' + currency(item.price);
       document.getElementById('drawer').classList.add('show');
       const form = document.getElementById('optionForm');
+      form.reset();
       form.onsubmit = (e)=>{
         e.preventDefault();
         const data = new FormData(form);
@@ -431,83 +433,19 @@
       else { copyURL(); }
     }
 
-    // ====== Self Tests ======
-    function runSelfTests(){
-      const results = [];
-      try{
-        // Test 1: Router switches sections
-        const before = document.querySelector('.section.active')?.dataset.route;
-        setRoute('menu');
-        const after = document.querySelector('.section.active')?.dataset.route;
-        results.push(['RouterSwitch', after==='menu']);
-        setRoute(before||'beranda');
-
-        // Test 2: Menu render populates items
-        renderMenu();
-        const items = document.querySelectorAll('#menuList .menu-card').length;
-        results.push(['MenuRenderCount', items===MENU.length]);
-
-        // Test 3: Cart add increases total
-        const t0 = cartTotal();
-        addToCart(MENU[0]);
-        const t1 = cartTotal();
-        results.push(['CartAdd', t1>t0]);
-
-        // Test 4: Counter function available
-        results.push(['CounterNoThrow', typeof initCounter==='function']);
-
-        // Test 5: Search filter reduces results
-        const search = document.getElementById('menuSearch');
-        if(search){ search.value = 'kopi'; renderMenu();
-          const filtered = document.querySelectorAll('#menuList .menu-card').length;
-          results.push(['SearchFilters', filtered < MENU.length && filtered > 0]);
-          search.value = ''; renderMenu();
-        } else { results.push(['SearchFilters', true]); }
-
-        // Test 6: Sort price asc
-        const sort = document.getElementById('menuSort');
-        if(sort){ sort.value = 'price-asc'; renderMenu();
-          const prices = Array.from(document.querySelectorAll('#menuList .menu-card'))
-            .map(card=>Number(card.querySelector('div[style*="font-weight:800"]').textContent.replace(/[^0-9]/g,'')||0));
-          const sorted = prices.every((v,i,a)=> i===0 || a[i-1] <= v);
-          results.push(['SortAsc', sorted]);
-          sort.value = 'pop'; renderMenu();
-        } else { results.push(['SortAsc', true]); }
-
-        // Test 7: Favorites toggle persists & filter works
-        FAVORITES.add(MENU[1].id); localStorage.setItem('favorites', JSON.stringify([...FAVORITES]));
-        const favBefore = document.querySelectorAll('#menuList .menu-card').length; 
-        const favToggle = document.getElementById('onlyFav'); if(favToggle){ favToggle.checked = true; renderMenu(); }
-        const favAfter = document.querySelectorAll('#menuList .menu-card').length;
-        results.push(['FavoritesFilter', favAfter <= favBefore && favAfter >= 1]);
-        if(favToggle){ favToggle.checked = false; renderMenu(); }
-
-        // Test 8: Drawer opens and adds with options
-        openDrawer(MENU[0]);
-        const drawerOpen = document.getElementById('drawer').classList.contains('show');
-        results.push(['DrawerOpen', drawerOpen]);
-        const form = document.getElementById('optionForm');
-        if(form){
-          form.querySelector('input[name="spicy"][value="2"]').checked = true;
-          const addon = form.querySelector('input[name="addon"][value="telur"]'); addon.checked = true;
-          form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));
-          const t2 = cartTotal();
-          results.push(['DrawerAddToCart', t2 > t1]);
-        }
-        closeDrawer();
-
-        // Test 9: Trafik elements exist (class .vc and #vcBar)
-        results.push(['TrafficElements', !!document.querySelector('.vc') && !!document.getElementById('vcBar')]);
-
-        // Test 10: Toast element exists
-        results.push(['ToastExists', !!document.getElementById('toast')]);
-
-      }catch(e){ results.push(['Exception', false, String(e)]); }
-      console.table(results.map(([name, pass, note])=>({name, pass, note: note||''})));
-      return results;
-    }
+    // ===== Boot =====
+    document.addEventListener('DOMContentLoaded', ()=>{
+      applyTheme(localStorage.getItem('theme')||'light');
+      setRoute();
+      renderMenu();
+      renderPosts();
+      updatePlausibleActive();
+      setInterval(updatePlausibleActive, 30000);
+      initCounter();
+    });
   </script>
 </head>
+
 <body>
   <!-- Navbar -->
   <div class="navbar">
@@ -575,28 +513,6 @@
         <p class="muted" style="margin:.4rem 0 0">Progres: <strong id="vcPctMini">0%</strong></p>
       </div>
     </section>
-
-    <section class="grid cols-3">
-      <div class="card">
-        <div class="badge">Special Today</div>
-        <h3>Rekomendasi Hari Ini</h3>
-        <p id="todayPick" class="muted">—</p>
-      </div>
-      <div class="card">
-        <div class="badge">Info</div>
-        <h3>Pengumuman</h3>
-        <p class="muted">Buka sampai 23:00. Ada colokan & Wi‑Fi.</p>
-      </div>
-      <div class="card">
-        <div class="badge">Shortcut</div>
-        <h3>Tautan Cepat</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn outline" onclick="location.hash='#blog';setRoute('blog')">Blog</button>
-          <button class="btn outline" onclick="location.hash='#testimoni';setRoute('testimoni')">Testimoni</button>
-          <button class="btn outline" onclick="location.hash='#kontak';setRoute('kontak')">Kontak</button>
-        </div>
-      </div>
-    </section>
   </main>
 
   <!-- Menu -->
@@ -659,6 +575,7 @@
         <p style="margin:.5rem 0">Saat ini: <strong class="vc">—</strong> kunjungan</p>
         <div class="progress" aria-label="Progres menuju 1.000"><span id="vcBar"></span></div>
         <p class="muted" style="margin:.5rem 0 0">Progres: <strong id="vcPct">0%</strong> · Sisa <strong id="vcRemain">—</strong> kunjungan</p>
+        <p class="muted" style="margin:.5rem 0 0">Aktif sekarang: <strong id="plActive">0</strong> pengunjung</p>
       </div>
       <div class="card">
         <div class="card head"><strong>Kunjungan Hari Ini</strong><span class="badge">Realtime</span></div>
@@ -666,6 +583,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
           <button class="btn primary" onclick="shareSite()">Bagikan Situs</button>
           <button class="btn outline" onclick="copyURL()">Salin Link</button>
+          <button class="btn outline" onclick="localStorage.removeItem('vc_last_hit_time'); initCounter()">+1 Test (Owner)</button>
         </div>
       </div>
       <div class="card">
@@ -756,117 +674,58 @@
   <section class="container section" data-route="tentang">
     <h2 tabindex="-1">Tentang Warkop Bungsu</h2>
     <div class="card">
-      <p>Warkop Bungsu adalah warung kopi & makan cepat di <strong>Jl. Pancing No. 95, Medan</strong>. Kami mengusung gaya lokal yang santai, cocok untuk mahasiswa dan karyawan sekitar kampus. Fokus kami: <em>cepat, murah, bikin betah</em>.</p>
-      <ul>
-        <li>Menu inti: mie/nasi goreng, soup, ayam, kopi & teh.</li>
-        <li>Estimasi siap saji: 5–10 menit.</li>
-        <li>Pesan mudah via WhatsApp, ambil di tempat.</li>
-      </ul>
+      <p>Warkop Bungsu adalah warung kopi & makan cepat di <strong>Jl. Pancing No. 95, Medan</strong>. Kami mengusung gaya lokal yang santai, cocok untuk nugas bareng, ngobrol, dan makan cepat.</p>
     </div>
   </section>
 
   <!-- Kontak -->
   <section class="container section" data-route="kontak">
     <h2 tabindex="-1">Kontak</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>Alamat & Jam</h3>
-        <p><strong>Jl. Pancing No. 95, Medan</strong></p>
-        <p class="muted">Jam buka: 10:00–23:00 (estimasi)</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="btn outline" href="https://www.google.com/maps/search/?api=1&query=Warkop+Bungsu+Jl.+Pancing+95+Medan" target="_blank" rel="noopener">📍 Buka di Maps</a>
-          <button class="btn" onclick="navigator.clipboard?.writeText('Jl. Pancing No. 95, Medan');showToast('Alamat disalin')">Salin Alamat</button>
-          <button class="btn" onclick="openWA('Halo, boleh minta pin Google Maps?')">Tanya Lokasi via WA</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Peta</h3>
-        <div style="aspect-ratio:16/9;border:1px solid var(--border);border-radius:12px;overflow:hidden">
-          <iframe title="Google Maps" width="100%" height="100%" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=Jl.%20Pancing%2095%20Medan&output=embed"></iframe>
-        </div>
-      </div>
-      <div class="card">
-        <h3>WhatsApp</h3>
-        <p>Pesan / tanya menu / reservasi:</p>
-        <button class="btn primary" onclick="openWA()">💬 Chat WhatsApp</button>
-      </div>
+    <div class="card">
+      <p>WhatsApp: <a href="javascript:void(0)" onclick="openWA()">+62 812-6345-7636</a></p>
+      <p>Alamat: Jl. Pancing No. 95, Medan</p>
     </div>
   </section>
 
-  <div class="footer container">
-    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>© <span id="year"></span> Warkop Bungsu · Medan Pancing</div>
-      <div>Pengunjung situs: <strong class="vc">—</strong> · Target 1.000</div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-
-  <!-- JSON-LD LocalBusiness (SEO) -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"CafeOrCoffeeShop",
-    "name":"Warkop Bungsu",
-    "address":{
-      "@type":"PostalAddress",
-      "streetAddress":"Jl. Pancing No. 95",
-      "addressLocality":"Medan",
-      "addressCountry":"ID"
-    },
-    "servesCuisine":["Indonesian","Coffee"],
-    "url":"https://contoh-warkop-bungsu.web",
-    "sameAs":[],
-    "priceRange":"Rp",
-    "menu":"#menu"
-  }
-  </script>
-
-  <!-- Drawer: Item Detail -->
+  <!-- Drawer (Detail Menu) -->
   <div id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
     <div class="drawer-panel">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 id="drawerTitle" style="margin:0">Detail Menu</h3>
+      <div class="card head">
+        <strong id="drawerTitle">Judul</strong>
         <button class="btn outline" onclick="closeDrawer()">Tutup</button>
       </div>
-      <div id="drawerBody" class="muted" style="margin-top:8px"></div>
-      <form id="optionForm" style="margin-top:12px">
-        <div class="card" style="margin-bottom:8px">
-          <strong>Pilih Level Pedas</strong>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-            <label><input type="radio" name="spicy" value="0" checked> 0</label>
-            <label><input type="radio" name="spicy" value="1"> 1</label>
-            <label><input type="radio" name="spicy" value="2"> 2</label>
-            <label><input type="radio" name="spicy" value="3"> 3</label>
-            <label><input type="radio" name="spicy" value="4"> 4</label>
-            <label><input type="radio" name="spicy" value="5"> 5</label>
+      <p id="drawerBody" class="muted" style="margin:.75rem 0">—</p>
+      <form id="optionForm">
+        <div class="grid cols-2">
+          <div class="card">
+            <strong>Pedas</strong>
+            <label><input type="radio" name="spicy" value="0" checked/> 0</label><br/>
+            <label><input type="radio" name="spicy" value="1"/> 1</label><br/>
+            <label><input type="radio" name="spicy" value="2"/> 2</label><br/>
+            <label><input type="radio" name="spicy" value="3"/> 3</label><br/>
+            <label><input type="radio" name="spicy" value="4"/> 4</label><br/>
+            <label><input type="radio" name="spicy" value="5"/> 5</label>
+          </div>
+          <div class="card">
+            <strong>Tambah (+Rp3.000)</strong>
+            <label><input type="checkbox" name="addon" value="telur"/> Telur</label><br/>
+            <label><input type="checkbox" name="addon" value="keju"/> Keju</label><br/>
+            <label><input type="checkbox" name="addon" value="sosis"/> Sosis</label>
           </div>
         </div>
-        <div class="card" style="margin-bottom:8px">
-          <strong>Tambahan (Rp3.000)</strong>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
-            <label><input type="checkbox" name="addon" value="telur"> Telur</label>
-            <label><input type="checkbox" name="addon" value="keju"> Keju</label>
-            <label><input type="checkbox" name="addon" value="extra-pedas"> Extra Pedas</label>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button type="button" class="btn outline" onclick="closeDrawer()">Batal</button>
-          <button type="submit" class="btn primary">Tambah ke Keranjang</button>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn outline" type="button" onclick="closeDrawer()">Batal</button>
+          <button class="btn primary" type="submit">Tambah ke Keranjang</button>
         </div>
       </form>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite">OK</div>
+
+  <footer class="footer container">
+    <div class="muted">© 2025 Warkop Bungsu · Medan Pancing</div>
+  </footer>
 </body>
 </html>
-
-<!-- bump: 2025-11-09T00:11:00 -->
-
-<!-- bump: 2025-11-09T15:53:08 -->
-
-<!-- bump: plausible verify 2025-11-09T16:04:19 -->
